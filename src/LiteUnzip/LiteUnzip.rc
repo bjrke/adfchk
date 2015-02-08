@@ -1,0 +1,119 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,0,0,2
+ PRODUCTVERSION 0,0,0,2
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "FileDescription", "Extract the contents from a ZIP archive\0"
+            VALUE "FileVersion", "0, 0, 0, 2\0"
+            VALUE "ProductVersion", "0, 0, 0, 2\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ZR_NOFILE               "Can't create/open file"
+    ZR_NOALLOC              "Failed to allocate memory"
+    ZR_WRITE                "Error writing to file"
+    ZR_NOTFOUND             "Item not found in the zip archive"
+    ZR_MORE                 "Still more data to unzip"
+    ZR_CORRUPT              "Zip archive is corrupt or not a zip archive"
+    ZR_READ                 "Error reading file"
+    ZR_NOTSUPPORTED         "The item is in a format that can't be decompressed by this Unzip add-on"
+    ZR_ARGS                 "Faulty arguments"
+    ZR_NOTMMAP              "Can get memory only of a memory-mapped zip"
+    ZR_MEMSIZE              "Not enough space allocated for memory zip"
+    ZR_FAILED               "There was a previous error"
+    ZR_ENDED                "Additions to the zip have already been ended"
+    ZR_MISSIZE              "The anticipated size turned out wrong"
+    ZR_ZMODE                "Mixing creation and opening of zip"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ZR_SEEK                 "Trying to seek the unseekable"
+    ZR_NOCHANGE             "Tried to change mind, but not allowed"
+    ZR_FLATE                "An error compressing an item"
+    ZR_PASSWORD             "Password is incorrect"
+    IDS_OK                  "Success"
+    IDS_UNKNOWN             "Unknown zip result code"
+END
+
+#endif    // English (U.S.) resources

@@ -1,0 +1,200 @@
+
+   CHANGELOG
+  ---------
+[date]    [ver]
+   
+2007-??-?? 0.0.1         pre-alpha version, fairly unstable; nothing much going on;
+  								       everything is a bloody mess
+  
+2008-05-30 0.0.2         pre-alpha version 2; lots of fixes in the reading routine;
+									       ugly memory leak fixed, first reconception of "Amiga Disk" structure
+	
+2008-10-25 0.0.5         structure enhanced, dangerous malloc() typo fixed; routine can now properly
+								         read ONE single block (remember: always start on a shoestring :))
+
+2008-10-27 0.0.10        major update:
+								         - structure now contains components for multi-word BCPL strings and block types
+								         - routine can now read the whole disk with all its bells and whistles!									   
+								         - added #define's for internal block type IDs (makes life easier)									 
+								         - reading directory structure from root block is now possible in a very basic way
+								         TODO: get rid of hardcoded disk name (maybe let user specify disk name?)
+								         TODO: support subdirectories up to 2nd or 3rd level 
+								         (ideally, make things *recursive*, but this is nothing for the faint of heart)
+
+2008-10-28 0.0.12        fixed stupid bug in memory allocation routine, which built up the structure 
+ 								         perfectly, but did not free it properly - sometimes caused nasty GPFs.
+ 								         Also merged block[i] and block[i]->lword[i] allocations into one routine 
+ 								         (allocation was previously done in two separate ones, which made no sense)
+  
+2008-10-30 0.0.14        another major update:
+ 								         - removed lots of obsolete code
+ 								         - removed a lot of debug stuff from recursive directory routine and started 
+ 								       	   creating some "graphical" display for the directory tree found on the disk image								      
+								         - some experiments with recursive directory reading: basically works but needs much 
+								           more work in incorporating the output into the other program part.
+								     
+2008-10-31 0.0.16        even another major update:
+  									     boot checksum routine is working now. 							   
+  								       Postponed concepts for recursive directory routine to make way for a 
+  								       major rewrite of the application's fundamentals.
+								    
+2008-11-03 0.0.20        complete rewrite of structure concept: many things were no good
+  									     idea at second thought. Many thanks must go to M. Kalms for his
+  									     invaluable suggestion of a union concept which can do bytes, words
+    									   and long words within the _same_ memory space. Pointer arithmetics 
+    									   are a mere walk in the park now! Hooray! Thanks M. K.!
+    									   Endian problems by hton* and ntoh* macro family also solved.
+    									   TODO: linked list for directory structure (this is the only 
+    									   rational way of doing it, but it won't be a breeze for sure)
+    									   YAY, all of a sudden something big and robust is coming up!
+									
+2008-11-04 0.0.22        Put old menu routines back in from first version.
+    								     Wrote __endian-aware__ get...() functions which can get a 
+    								     byte, word or long word from either the superstructure or the
+    								     substructure. A Linux user encouraged me to avoid using original 
+    								     hton*()/ntoh*() macro family names, because on his OS, these 
+    								     would appear "in use" and cause trouble! Thanks, fixed!
+
+2008-11-05 0.0.50        HUGE update.
+  									     - made the application suitable for BATCH processing by implementing
+  									       a comprehensive command-line parameter control.
+  									     - added an additional boolean array to represent the bitmap of the AmigaDOS disk.
+  									     This is extremely important because free blocks (marked unused) usually have 
+  									     an invalid checksum; these must *not* be detected as "bad blocks".
+
+2008-11-06 0.0.55        Fixed another dangerous bug - program carelessly attempted to evaluate the bitmap with 
+                         ILLEGAL BAM keys (with unpredictable results in every respect).
+  									     Also added NULL initializations for the main pointer variables because in contrary to popular 
+  									     belief, those do NOT initialize with NULL automatically!
+  									     Stripped down the "graphical" header for batch mode, because it makes no sense having 
+  									     5+ lines for header if the thing is supposed to run by itself, without user intervention.
+  									     (Explicit log file specification with the -l option will cause the entire header
+  									     to be suppressed.)
+									 
+2008-11-07 0.0.60        LAMER virus detection on block is now possible !
+ 									       Memory leak due to misplaced free() statement fixed! (got buried too far inside the nested
+ 									       if-construction) 									   
+ 									       Removed silly "illegal bitmap" screen message flood, which caused a load of unnecessary 
+ 									       overhead in batch mode.
+ 									   
+ 									       Still TODO: Saddam/IRAK virus infection detection and decoding. The latter is not that easy 
+ 									       because the whole block is (XOR?) encoded against something yet to figure out.
+
+2008-11-11 0.1.0         ZIP files are now supported! After some fiddling with Gilles Vollant's "minizip" contribution
+                         (part of JL Gailly's & Mark Adler's zlib package), it turned out that minizip unpacked to hard disk 
+                         instead of to memory buffer - no use for that, sorry! Also in respect to  users wanting to 
+                         check their READ-ONLY ADF CD-Rs!!)
+                         So I switched to LiteUnzip.DLL API for unzipping. Not only this works very well, but it also keeps
+                         the executable size reasonably small. 
+                         Fixed ugly protection fault in a loop inside evalBitmap()!
+                         (Don't you EVER attempt to read one boolean word BEYOND the 1759th one! (arghh!!))
+                   
+2008-11-12 0.1.1         ZIP file support code continued; now also more detail possible in log file output. 
+                         RC is virtually ready for release!
+
+2008-11-13 0.1.2         Some more minor fixes; trimmed down program header in batch mode even more, because the BAT 
+[RC1]                    file is supposed to run unattended.
+                         Added another variant of the LAMER virus (the one randomly infecting blocks) with other case 
+                         in spelling (LAMER vs. Lamer).                     
+
+2008-11-15 0.1.2         A boatload of changes:
+  [RC2]                  - Rewrote ENTIRE command-line parameter parser; auto-batch mode must be forced now
+  										   Adding parameters in random order is now possible (yeah!)
+                         Combinations like e. g. -b without filename specification will be blocked, though.
+                         adfchk -f <ADF_FILENAME> invokes menu mode and auto-reads the image into buffer.
+                         - added shiny graphical box to tell about missing LiteUnzip.dll
+                         - nice Linux Makefile by Oddbod. (Thanks!)  
+                         - LiteUnzip.h moved out of zipsupp/ subfolder. (appeared to have confused MAKE)  
+                         - [adfmyunzip.c]: Fixed RARE Windows-only bug in speedy mass-batch mode caused by
+                         GlobalFree() Win32! Sometimes memory was not correctly free()'d when operating in paths
+                         with VERY long names inside deep trees; using good ol' free() fixed this.
+
+2008-11-17 0.1.3         Lots of major changes again:
+                         - added block types; this prevents "checksum error" warnings with blocks that are in no 
+                           known AmigaDOS format. Type of block gets written to the log file as well now.
+                         - lots of special formats are now recognized (e. g. root block ptr cleared but rest of
+                           disk being AmigaDOS, etc.)
+                         - error checking routine grew quite big and now resides in its own file, adfchkerr,c
+                         - lots and lots of minor tweaks and fixes.
+                  
+2008-11-18 0.1.3bis      source updates only! Win32 binary works and needs no fixes.
+                         Minor Linux tweaks:
+                         - got rid of stricmp() completely by simply using a combination of strcmp() and my own 
+                           strToUpper() function.
+                         - due to malfunctioning endian macros: complete rewrite of endian preprocessor stuff.
+                           Now supports specialties of Linux, FreeBSD, NetBSD and Cygwin. Put into its extra file now,
+                           byteorder.h. Should build OOTB now on Linux-ish systems!
+
+2008-11-21 0.1.4         Now uses typified log files: _NDOS, _ERR(oneus), _VIRUS, _FFS, _OK, _IOERR (for I/O errors).
+                         Fixed false reports of allegedly "correct" BAM key detection with ZIP files, also helped 
+                         to trim down log file size even more.
+                         DATA block checks now include header key check to avoid phony detection of "data blocks"
+                         in NDOS disks. Tricky stuff, because DATA blocks got no secondary type.
+                         Now supports over- and underdumps, as well as both types of extended ADFs. 
+                         (Note: Due to their MFM-based nature, extended ADFs cannot yet be scanned. Sorry!)
+
+2009-10-13 0.2.0alpha1   New:
+                         - VIRUS detection: 
+                           -- SADDAM (bogus disk-validator + data block signature replaced by 'IRAK')
+                             (Decoding of encoded blocks is currently still WIP. Sorry.).
+  											   -- Jeff/Butonic v1.3.1 (3408 bytes)
+                         - CRC32 calculation
+                         - Quarterback backup set detection (common DosType replaced by 'Qb??' on boot block header)                         
+                         Fixes/Enhancements:                
+                         Stupid lower boundary problem with BAM location fixed (was: 3; now: 2).
+                         (NB: Try finding a disk with the bitmap on block 2 - they're _very_ rare, Really!)
+                         Major rewrites and enhancements in ADOS/NDOS detection logic.
+                         Refined (and at part "embellished") log file information output.
+                         TODO until 0.2.1 (final): WORKING DMS SUPPORT! (might as well take some more days,
+                         albeit xdms code has already been properly 'woven' in by now)
+
+2009-10-19 0.2.0alpha2   New:
+											   - Fixed bogus detection of very special pseudo-ADOS format in games Project-X and Puffy's Saga
+											   - DMS error detection ("DMS!!ERR" in block) implemented (will also work for NDOS disks).
+											     Log files of disk images with DMS errors are recognizable by their (new) _DMSERR suffix.
+											                          
+2009-10-23 0.2.0alpha3   Hooray, DMS checking finally works great now! (uses a heavily stripped-down xDMS code
+												 which had to be partly rewritten so that it unpack directly to memory buffer in order
+												 to avoid ugly temp file writeouts)
+
+2009-10-28 0.2.0alpha4   New: 
+												 - More BOOT block viruses detected now:
+												 -- Byte Bandit (3 variants supported)
+												 -- Byte Warrior
+												 -- Joshua 1 + 2
+												 -- Pentagon Circle 1 + 2
+												 -- Little Sven					 												 
+												 - FILE viruses that ADFCHK can detect now:
+												 -- Jeff/Butonic (v3.10) [1.31 was already recognized correctly in alpha1]
+												 -- Eleni 1 (MessAngel-B)												 
+												 Other stuff:
+												 - Rob Northen Copylock block ID ("RNC" signature) is now detected as well
+												 and ... FINALLY! Decomplexified adfchkerr.c by a great extent! Lots of redundant stuff has now 
+												 been removed.
+                         Made printBAMInfo() more general and bigger in order not to clog up the fairly comprehensive
+                         core routine.chkErr() too much.
+												 Forced _NDOS suffix for even more NDOS disks (still too many NDOS disks were misreported as
+												 '_OK' in the logs, which makes no sense since this condition is indeterminable when NDOS!)
+
+2009-10-31 0.2.0alpha5   New: 
+												 - Added LEVIATHAN and SEPULTURA viruses to boot block detection.
+												 Fixes:
+												 - Fixed STUPID (!) crash caused by plain adf image at size < 901120.
+												 (worked with ZIPPED adf underdumps!)		 
+												 Enhancements:
+												 - Since deep block T_DATA (0x08) scanning is still unsatisfying to me (if one of the criteria
+												 is not met, block is deemed BLKTYPE_UNKNOWN), I've now rewritten the routines which handle
+												 recognition of data blocks (e. g. bad seq number, BUT valid header key etc.)
+												 Everything is much more refined now. 
+												 Rescanning TOSEC set brought up a handful of new disk images with this type
+												 of errors (previously undetected)
+
+2009-11-01 0.2.1 FINAL   R E L E A S E D  v0.2.1 (final) to the public.
+
+2009-12-03 0.2.2         That was sort of infuriating! 
+                         Accidentally left in a superfluous free() from an old debug session, which was perfectly
+                         cloaked by the complex Win XP/Vista/7 architecture, but turned out to bail out with a 
+                         General Protection Fault on my Windows 2000 installation!!
+                         This update might also fix a rare possible heap corruption on XP/7 (if it occurs at all) 
+                         after 10,000 files or more. Glad this is settled now!
+                         Some minor command-line output fixes were applied too.

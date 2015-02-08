@@ -1,0 +1,239 @@
+================================================
+adfchk v0.2.0 by A. Eibach (c) 2007 - 2010               01 Nov 2009
+================================================
+
+
+----------
+  INTRO
+----------
+A long-time spare-time project of mine has finally MATERIALIZED!
+
+This tool makes it possible to check ADFs (Amiga Disk Files) without needing 
+any Amiga tool at all!
+A software like this is necessary because the amount of ADFs has exponentially
+increased in these almost 15 (!) years of UAE (Ubiquitous Amiga Emulator) 
+development.
+Floppy emulation is more and more accurate and sometimes simply must be slowed
+down to correctly read every sector, especially with alien format disk images.
+Now imagine you've got 1,000 ADF images on your hard disk and you need to 
+check them! A possible way is to use one of the excellent checking programs
+like Dave Haynie's DiskSalv[TM] and probably be unable to finish your checking 
+task within 1 month! :->
+That's when ADFCHK comes into place.
+You can either use it by MENU with ONE file (NOTE: there's no shiny file selection 
+yet) or use the supplied BATCH file(s) (sorry, Windows only for now, a shell script
+for bash is in the works!) for  t h o u s a n d s  of files!!
+The BAT file took days to finish and lo' and behold, it is not one of your 
+commonly known run-of-the-mill batch files!!
+
+
+----------------------------
+ WHAT adfchk CAN DO
+----------------------------
+ - find boot and data block checksum errors on AmigaDOS disks, writing the exact 
+   location (cylinder, surface, sector) into a log file 
+   [Also scans NDOS disks, but I'm planning to keep the logging to a minimum 
+    for this disk type]
+ 
+-  detect three types of the LAMER virus which randomly infects single sectors, 
+   destroying them irreversibly by writing its name across the WHOLE sector;
+   now also supports a bunch of boot viruses and a small amount of file viruses
+   (LINK viruses are in the works, since this is no easy task)
+
+ - avoid bogus "checksum errors" by properly reading the disk's bitmap; only 
+   errors on blocks which are USED and KNOWN to the AmigaDOS file system
+   are reported as actual "checksum errors" 
+
+ - scan within ZIP (and since 0.2.0: DMS!) archives for ADFs; even supports 
+   partly broken ZIPs, e. g. if Disk 1 is an underdump (<880K), it will be 
+   skipped, but Disk 2 will be checked anyway.
+
+------------------------------
+NEW FEATURES IN VERSION 0.2.0: 
+------------------------------
+- DMS file support!! (please consider this still EXPERIMENTAL)
+  (CAUTION: there is a RARE behavior which will sometime lock up ADFCHK with very large
+   DMS archives; I still do not know why this happens. It never happened with ZIP trees, 
+   be they as huge as possible...)
+
+- BOOT block virus detection support: 
+  Byte Bandit (3 variants supported [NB: encoded ones to come]), Byte Warrior,
+  Joshua 1 + 2, Pentagon Circle 1 + 2, Little Sven, Eleni 1 (MessAngel-B),
+  Sepultura, Leviathan
+  
+- FILE virus detection support: 
+  Jeff/Butonic (versions 1.31 + 3.10), SADDAM/IRAK
+  
+- Detection of special disk formats/signatures:
+ -- Rob Northen Copylock disks (DosType = 'RNC')
+ -- Quarterback backup sets (DosType = 'Qb'+number or 'QB'+number)
+
+- Format-independent DMS transfer error detection (DMS!!ERR; will also handle NDOS disks)
+
+- Deep-checking (automatic) of DATA blocks; now also detects errors of:
+ -- Bad sequence numbers
+ -- Bad nextData pointers
+ -- Bad validData values (greater than 0x1E8 or less than 0x01)
+ (NOTE: Deep checking is auto-disabled for blocks with illegal header key numbers,
+  in order to prevent misdetections!)
+
+----------------------------
+ "TODO-LIST" (WHAT adfchk CANNOT DO (YET))
+----------------------------
+ - decode SADDAM-infected blocks and optionally write the corrected results 
+   back to the images
+ - proper LINK-virus detection (this will require me to write an extra routine for hunk handling)
+ -   
+
+----------------
+NEW SINCE 0.1.3: 
+----------------
+- support for extended ADFs (detection only for now)
+- support for over- and underdumps; no more interactive key-pressing in batch mode
+- scanner now uses _XXXX suffixes to tag the log files which makes it easier to 
+  isolate the actually erroneous 
+- lots of phony reports of "checksum errors in data blocks" eliminated by better 
+  and deeper checking of data block structures and expected AmigaDOS properties.
+
+---------------
+NEW SINCE RC2: 
+---------------
+- supports block types (file list, header, user directory, formatted, unknown...)
+- standard type recognition works now (FFS + INTL/NO INTL, DIRCACHE etc.)
+- FFS detection support (it makes no sense to check FFS disks for "checksum errors",
+  since FFS does not use checksums for data blocks
+- fixed lots of misdetections and phony reports of "checksum errors"
+- lots of minor tweaks, code cleanups and fixes.
+
+------------
+INSTALLATION
+------------
+Nothing to "install" here: only make sure that LiteUnzip.dll is in the
+current path!! (when I really feel the need to, I could code it a little
+better and force the tool into a crippled mode where you can only test
+plain .ADF's whenever the DLL cannot be found, but this is only a "maybe", since
+there are much more important things to do first)
+
+------------
+   USAGE
+------------
+Usage is very simple:
+
+[win32]
+adfchk.exe [-f <file name> [-l <log file>][-b(atch mode)]]
+
+[linux]
+./adfchk [-f <file name> [-l <log file>][-b(atch mode)]]
+
+---------------------------------------------------------------------------------------
+| NOTE: Unlike RC1 and earlier versions, the application will now auto-enter 
+| menu mode due to a lot of user requests. If and only if the '-b' option is specified 
+| AND a filename is given, a non-interactive batch mode will be used.
+| This also made some changes necessary in the four *.BAT files.
+| 
+| ADDITIONAL NOTE: Do not be surprised if the batch header gets suppressed if the -l 
+| option was specified. This is DELIBERATE behavior, since I do not want to have the 
+| header displayed a few thousand times when unattendedly scanning huge archives.
+---------------------------------------------------------------------------------------
+
+[INTERACTIVE MODE]
+
+- Type "adfchk" on command line - a MENU opens:
+  (1) Purpose of the program -> get another boring text what the program is for
+  (2) Read ADF into buffer -> load ADF from hard disk into memory
+  [NOTE: at this stage, file MUST be called DEFAULT1.ADF - a file selection menu
+   is planned, though!]
+  
+  (3) Check directory structure of ADF in buffer    [DOES NOTHING YET at the moment]
+  (4) Check for block checksum errors on disk image->check image, which must now
+      be in memory buffer
+  (5) Quit
+
+   Results will be in ADFCHK.LOG on the current directory.
+
+[BATCH MODE] 
+
+ This is the mode you will probably use very frequently, as with 1,000 images
+ and more, it would be a very awkward procedure to check those in interactive
+ mode!
+ 
+ The program detects the -f option, which specifies a filename and then will 
+ go automatically into batch mode.
+ The -l option can also specify a log file instead of the default file "ADFCHK.LOG".
+ This is the only reasonable way to get a bunch of logs.
+ Example:
+
+ adfchk -f blah.adf -l blah.log -b
+
+ will log the checking results of 'blah.adf' to the file 'blah.log'.
+
+[MASS BATCH MODE]
+
+ Since it will still take a whale of a time to implement a recursive search 
+ through directories that will work on BOTH Linux and Windows (which is my
+ goal!!), I've written a very nifty BAT file (Windows only for now, sorry!)
+ which is able to RECURSIVELY scan each and every directory starting from the 
+ current one. Yes, indeed for 1,000 ADFs, it will be run exactly a thousand
+ times in sequence. But since it is so small, it won't take much memory; 
+ however, CPU usage will go quite high when the script is running through
+ thousands of files: this is normal.
+ 
+ To make use of mass batch mode, do this:
+
+[WINDOWS ONLY] 
+ First of all, you must make sure that save from the appropriate .BAT file, 
+ both 
+ - ADFCHK.EXE
+ and 
+- LiteUnzip.dll 
+ must be in the directory from which you want to start the scan.
+ 
+ run:
+  CHKADF.BAT  to test ADF files (and only ADF files)
+  CHKZIP.BAT  to test ADF files inside ZIP archives (and only ADFs inside)
+  CHKALL.BAT  to test both standalone ADF files and ADF files inside ZIP archives
+
+[RESULTS OF MASS BATCH MODE]
+When the .BAT file has finished scanning (which can take easily half an hour with 
+5,000 files!), it will put lots of ADF????.LOG files into the .\logs\ subdirectory
+relative to the directory from where you started the search.
+Unfortunately, in the .BAT solution I was forced to do this, because writing 
+everything to ONE log file would make the file that big so that *most* editors
+would call it quits. (500 MB is no joke, but possible! Mind you, this is ten
+thousands of lines!!)
+
+------------
+ TODO-LIST
+------------
+ - search recursively by running the tool once, accessing all subdirectories
+   recursively from start directory in both Windows and Linux
+ 
+-  check for in-block errors (wrong sequence numbers with files, illegal header
+   keys etc.); however, this will require a ...
+
+-  ... linked list for the directory tree.
+
+-  better handling of NDOS disks (Do _not_ complain about 1760 checksum errors
+   in log file with a disk that is completely in alien format.)
+
+------------
+ THANKS TO
+------------
+- M. Kalms for his invaluable tips and patience during development
+- JL Gailly and Mark Adler for zlib (although I'd like to see built-in ZIP support
+  without contributor's code)
+- Gilles Vollant for coding the 'miniunz(ip)' tool which showed how to unzip contents
+  of a ZIP archive to hard disk using zlib
+- Jeff Glatt @ CodeProject.COM for his LiteUnzip.DLL which finally made unzipping to MEMORY a walk 
+  in the park
+- 'Oddbod' (EAB) for contributing the Linux Makefile - and for constructive criticism and 
+  reasonable suggestions
+- Someone else for letting me use his private server to get the whole TOSEC collection
+  (to have something to play with; you know who you are :))
+------------
+  LICENSE
+------------
+adfchk is distributed in the hope that it will be useful, but AS-IS, WITHOUT ANY WARRANTY
+and without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License v2 (LICENSE / LICENSE.txt in the package) for more 
+details.
