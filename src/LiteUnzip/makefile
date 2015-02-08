@@ -1,9 +1,9 @@
 CC=gcc
-CFLAGS=-Wall -O
+CFLAGS=-Wall -O -m32
 LIBS=
 OBJECTS=LiteUnzip.o
-# Comment the next line to create version without debugging
-# LDFLAGS=-g
+LDFLAGS=-g -m32
+#LDFLAGS=-g
 
 libliteunzip.so: $(OBJECTS)
 	$(CC) $(LDFLAGS) -shared -Wl,-soname,libliteunzip.so -o $@ $(OBJECTS) $(LIBS)

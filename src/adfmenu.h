@@ -2,6 +2,8 @@
 #ifndef ADFMENU_H
 #define ADFMENU_H
 #include <stdio.h>
+#include "typedefs.h"
+#include "adfstruct.h"
 
 /* #include "adfmisc.h" */
 

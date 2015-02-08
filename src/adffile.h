@@ -7,6 +7,8 @@
 #include <stdarg.h> /* va_list */
 #include <string.h>
 
+#include "adfstruct.h"
+#include "typedefs.h"
 #include "byteorder.h"
 
 #define _LOGFILENAME_GENERIC "ADFCHK.LOG"

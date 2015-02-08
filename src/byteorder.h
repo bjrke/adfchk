@@ -5,7 +5,7 @@
 #define _LITTLE_ENDIAN   
 #endif
 
-#if defined(LINUX) || defined(__CYGWIN__)
+#if defined(__linux__) || defined(LINUX) || defined(__CYGWIN__)
 #include <endian.h>
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN

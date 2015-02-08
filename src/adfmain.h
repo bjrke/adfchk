@@ -4,6 +4,8 @@
 #ifdef __TURBOC__
 #include <conio.h>
 #endif
+#include "typedefs.h"
+#include "adfstruct.h"
 
 /* string constants */
 

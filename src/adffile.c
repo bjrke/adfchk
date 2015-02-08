@@ -146,7 +146,7 @@ uint8 imgToMem (FILE* ifilePtr, FILE* debugLogPtr, dskImgS_t *pImg)
 	rewind (ifilePtr);
   if (!(rawbuf = malloc(fsize)))
 	{
-		printf("ALLOCATION ERROR!  - %s\n", strerror(errno));
+		printf("ALLOCATION ERROR!");
 		return 0;
 		
 	} /* endif (malloc 1 failed) */		

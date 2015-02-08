@@ -2,6 +2,8 @@
 #ifndef ADFCHKERR_H
 #define ADFCHKERR_H
 
+#include <stdio.h>
+
 #include "typedefs.h"
 #include "adfstruct.h"
 #include "blktypes.h"
