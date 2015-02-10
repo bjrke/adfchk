@@ -457,7 +457,7 @@ if (hasFileSet)
            		 memcpy (dskptr, fbuf, ADF_STANDARD_SIZE);
            	   dskptr->crc32 = getCRC32 (fbuf, ADF_STANDARD_SIZE);
            	   free (fbuf);
-           	   chkCompressedADF (dskptr, log, NULL, 0);           	   
+           	   chkCompressedADF (dskptr, &log, NULL, 0);
            	   iSuccess = 1;
            	}
            	else 
@@ -527,7 +527,7 @@ if (hasFileSet)
           if (!isDMS ^ (isDMS && !useBatch))  /* in batch mode (and only there!) DMS files have already been checked at this time! */
           {   
           	  log = initLog (logFilenameMain);
-          	  iError = chkErr (dskptr, secProps, log, NULL, dummy);
+          	  iError = chkErr (dskptr, secProps, &log, NULL, dummy);
           }	  
         	
         	if (argc > 2) 
@@ -551,9 +551,14 @@ if (hasFileSet)
 		  		  break;
 
 		 } /* endwhile */
- 
- if (log) fclose (log);
- if (secProps) free (secProps);
+ if (log) {
+	fclose (log); 
+	log = NULL;
+}
+ if (secProps) {
+	free (secProps);
+	secProps=NULL; 
+}
  disposeImgS(dskptr);
  return ok; 
 }

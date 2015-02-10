@@ -21,7 +21,7 @@ bool chkDMSerr(singleSecS_t* /*, uint16 */);
 uint8 getBlkType(singleSecS_t*, uint8*,    uint16);
 
 
-bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZIP, uint8 type)
+bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE** log, inZIP_t* inZIP, uint8 type)
 {
 	/* THIS IS ACTUALLY THE CORE FUNCTION OF THE WHOLE THING. 
 	   Due to its high complexity level, it has been put into its own file. 
@@ -102,10 +102,10 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
     /* WRITE HEADER INTO LOG FILE */
     /* -------------------------- */            
     				   			     				    			    				 
-    writeLog (log, "---------------------------------------------------------------------------------------------");  
-    writeLog (log, "CHECKING DISK:          '%s'\n\nPATH TO FILE:           '%s'\n", adfFilename, adfFilepath);
+    writeLog (*log, "---------------------------------------------------------------------------------------------");
+    writeLog (*log, "CHECKING DISK:          '%s'\n\nPATH TO FILE:           '%s'\n", adfFilename, adfFilepath);
 
-    writeLog (log, "BLOCK 0 TYPE:           '%s'\n", DOS_TYPES[pImg->bootblktype]);
+    writeLog (*log, "BLOCK 0 TYPE:           '%s'\n", DOS_TYPES[pImg->bootblktype]);
     		   
     fprintf (stdout, "\n                                                                    ----------------------------------------------------------\n");
     fprintf (stdout, "\n                                                                     ");
@@ -114,7 +114,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
     if (pImg->hasADOSRootBlk)
     {
     		  fprintf (stdout, "Processing ADOS volume:  %s\n\n", pImg->volName);
-          writeLog (log, "AMIGA DOS VOLUME NAME:  '%s'\n\n", pImg->volName);
+          writeLog (*log, "AMIGA DOS VOLUME NAME:  '%s'\n\n", pImg->volName);
     }
     else
     {	       
@@ -126,7 +126,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
          
            	fprintf (stdout, "Processing volume:  <name unavailable>");
           	fprintf (stdout, "\n                                                                      (illegal volume name length)\n\n");
-            writeLog (log, "AMIGA DOS VOLUME NAME:  <not available with QB backup sets (with few exceptions)>");     
+            writeLog (*log, "AMIGA DOS VOLUME NAME:  <not available with QB backup sets (with few exceptions)>");
             hasInvalidName = true;
         }
         else
@@ -148,14 +148,14 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
            	   if (pImg->hasADOSRootBlk)
                 {       	 
              	    printf ("Processing ADOS volume:  %s\n\n", pImg->volName);
-           	      writeLog (log, "AMIGA DOS VOLUME NAME:  '%s'", pImg->volName);
+           	      writeLog (*log, "AMIGA DOS VOLUME NAME:  '%s'", pImg->volName);
                 }
                 else  
                 {  
                   fprintf (stdout, "Processing NDOS volume: <name unavailable>");
            		    fprintf (stdout, "\n                                                                     (illegal volume name length)\n\n");
            		
-           		    writeLog (log, "AMIGA DOS VOLUME NAME:  <not available> (illegal length - NDOS disk?)\n");
+           		    writeLog (*log, "AMIGA DOS VOLUME NAME:  <not available> (illegal length - NDOS disk?)\n");
            	  
            	      hasInvalidName = true;
            	   }	
@@ -164,7 +164,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
             { 
     	        /* BAM key valid; it can be safely assumed that the volume name is OK! */
     	        fprintf (stdout, "Processing ADOS volume:  %s\n\n", pImg->volName);
-    	        writeLog (log, "AMIGA DOS VOLUME NAME:  '%s'", pImg->volName);
+    	        writeLog (*log, "AMIGA DOS VOLUME NAME:  '%s'", pImg->volName);
             }
         }
     
@@ -177,11 +177,11 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
     {
    	  char fn[MAXFILENAMELEN];
       splitpath (inZIP->name, NULL, fn);
-      writeLog (log, "CRC32 CHECKSUM:                %08lX", inZIP->crc32);
-      writeLog (log, "\nCHECKING FILE #%d INSIDE ZIP:   '%s'\n", (inZIP->pos)+1, fn);
+      writeLog (*log, "CRC32 CHECKSUM:                %08lX", inZIP->crc32);
+      writeLog (*log, "\nCHECKING FILE #%d INSIDE ZIP:   '%s'\n", (inZIP->pos)+1, fn);
     }
     else
-    	writeLog (log, "CRC32 CHECKSUM:         %08lX\n\n", pImg->crc32);
+    	writeLog (*log, "CRC32 CHECKSUM:         %08lX\n\n", pImg->crc32);
 
 
     /* avoid nonsensical output of < 1760 "bad sectors" or "NDOS"-misdetection 
@@ -196,9 +196,10 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
    	/* illegal volume = QB backup set*/
     	
     	fprintf (stderr, "CHECKING ABORTED - This disk is part of a Quarterback backup set and cannot be checked due to its special format.\n\n");
-    	writeLog (log, "\nCHECKING ABORTED - This disk is part of a Quarterback backup set and cannot be checked due to its custom format.\n\n");
-    	
-    	fclose(log);
+    	writeLog (*log, "\nCHECKING ABORTED - This disk is part of a Quarterback backup set and cannot be checked due to its custom format.\n\n");
+
+    	fclose(*log);
+    	*log=NULL;
       strcat (logFilenameCopy, SUFFIX_QSET);          
       remove (logFilenameCopy);
       rename (logFilenameMain, logFilenameCopy);
@@ -208,7 +209,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
     {
     	 /* valid volume AND FFS detected */
        fprintf (stderr, "\nThis is a FFS (Fast File System) disk, which does not use any checksums for data blocks.\n\n");
-       writeLog (log, "\nThis is a FFS (Fast File System) disk, which does not use any checksums for data blocks.\n");
+       writeLog (*log, "\nThis is a FFS (Fast File System) disk, which does not use any checksums for data blocks.\n");
        isFFS = true;          
        noDeepChk = true;
     }
@@ -253,9 +254,9 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
     
        if ((memcmp (virSigBuf, byteBdtSig, q)) == 0)
        {
-       	 writeLog (log, "\n*********************************************************************************");
-     	   writeLog (log, "\nVIRUS ALERT: Found Byte Bandit virus on block 0 - this disk is infected!\n");
-         writeLog (log, "*********************************************************************************\n");     	   
+       	 writeLog (*log, "\n*********************************************************************************");
+     	   writeLog (*log, "\nVIRUS ALERT: Found Byte Bandit virus on block 0 - this disk is infected!\n");
+         writeLog (*log, "*********************************************************************************\n");
          fprintf (stderr, "\nATTENTION: BYTE BANDIT VIRUS DETECTED ON BLOCK 0!\n\n");
          vircnt++;
        }
@@ -265,9 +266,9 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
           (*v1buf++) = *(pImg->sec[0].blkbyte + 16 + q);
        if ((memcmp (virSigBuf, leviathanSig, q)) == 0)
        {
-       	 writeLog (log, "\n*********************************************************************************");
-     	   writeLog (log, "\nVIRUS ALERT: Found LEVIATHAN virus on block 0 - this disk is infected!\n");
-         writeLog (log, "*********************************************************************************\n");
+       	 writeLog (*log, "\n*********************************************************************************");
+     	   writeLog (*log, "\nVIRUS ALERT: Found LEVIATHAN virus on block 0 - this disk is infected!\n");
+         writeLog (*log, "*********************************************************************************\n");
          fprintf (stderr, "\nATTENTION: LEVIATHAN VIRUS DETECTED ON BLOCK 0!\n\n");
          vircnt++;       	
        }	
@@ -278,17 +279,17 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
        
        if ((memcmp (virSigBuf, sepulBBSig, q)) == 0)
        {
-       	 writeLog (log, "\n*********************************************************************************");
-     	   writeLog (log, "\nVIRUS ALERT: Found SEPULTURA virus on block 0 - this disk is infected!\n");
-         writeLog (log, "*********************************************************************************\n");     	   
+       	 writeLog (*log, "\n*********************************************************************************");
+     	   writeLog (*log, "\nVIRUS ALERT: Found SEPULTURA virus on block 0 - this disk is infected!\n");
+         writeLog (*log, "*********************************************************************************\n");
          fprintf (stderr, "\nATTENTION: SEPULTURA VIRUS DETECTED ON BLOCK 0!\n\n");
          vircnt++;
        }                           
        else if ((memcmp (virSigBuf, lilSvenSig, q-24)) == 0)
        {
-       	 writeLog (log, "\n*********************************************************************************");
-     	   writeLog (log, "\nVIRUS ALERT: Found LITTLE SVEN virus on block 0 - this disk is infected!\n");
-         writeLog (log, "*********************************************************************************\n");     	   
+       	 writeLog (*log, "\n*********************************************************************************");
+     	   writeLog (*log, "\nVIRUS ALERT: Found LITTLE SVEN virus on block 0 - this disk is infected!\n");
+         writeLog (*log, "*********************************************************************************\n");
          fprintf (stderr, "\nATTENTION: LITTLE SVEN VIRUS DETECTED ON BLOCK 0!\n\n");
          vircnt++;
        }      
@@ -298,9 +299,9 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
           (*v1buf++) = *(pImg->sec[0].blkbyte + 80 + q);    
        if ((memcmp (virSigBuf, byteWarSig, q)) == 0)
        {
-     	   writeLog (log, "\n*********************************************************************************");
-     	   writeLog (log, "\nVIRUS ALERT: Found Byte Warrior (DASA) virus on block 0 - this disk is infected!\n");
-         writeLog (log, "*********************************************************************************\n");
+     	   writeLog (*log, "\n*********************************************************************************");
+     	   writeLog (*log, "\nVIRUS ALERT: Found Byte Warrior (DASA) virus on block 0 - this disk is infected!\n");
+         writeLog (*log, "*********************************************************************************\n");
          fprintf (stderr, "\nATTENTION: BYTE WARRIOR (DASA) VIRUS DETECTED ON BLOCK 0!\n\n");
          vircnt++;
        }       
@@ -310,9 +311,9 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
        	 uint8 ver = ((memcmp (virSigBuf, joshua2SOSig, q)) == 0) ? 2: 1;       	 
        	 char * z = (ver == 2) ? " (Switchoff) " : " ";
        	 
-       	 writeLog (log, "\n*********************************************************************************");
-     	   writeLog (log, "\nVIRUS ALERT: Found JOSHUA %d%svirus on block 0 - this disk is infected!\n", ver, z);
-         writeLog (log, "*********************************************************************************\n");
+       	 writeLog (*log, "\n*********************************************************************************");
+     	   writeLog (*log, "\nVIRUS ALERT: Found JOSHUA %d%svirus on block 0 - this disk is infected!\n", ver, z);
+         writeLog (*log, "*********************************************************************************\n");
          fprintf (stderr, "\nATTENTION: JOSHUA %d%sVIRUS DETECTED ON BLOCK 0!\n\n", ver, z);
          vircnt++;
        }
@@ -321,9 +322,9 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
        {
        	 uint8 ver = ((memcmp (virSigBuf, pentagonC2Sig, q)) == 0) ? 2: 1;        
        	 
-       	 writeLog (log, "\n*********************************************************************************");
-     	   writeLog (log, "\nVIRUS ALERT: Found PENTAGON CIRCLE %d virus on block 0 - this disk is infected!\n", ver);
-         writeLog (log, "*********************************************************************************\n");
+       	 writeLog (*log, "\n*********************************************************************************");
+     	   writeLog (*log, "\nVIRUS ALERT: Found PENTAGON CIRCLE %d virus on block 0 - this disk is infected!\n", ver);
+         writeLog (*log, "*********************************************************************************\n");
          fprintf (stderr, "\nATTENTION: PENTAGON CIRCLE %d VIRUS DETECTED ON BLOCK 0!\n\n", ver);
          vircnt++;
        }
@@ -334,7 +335,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
     {
     	/* rootblock = 0x370 */
     	
-    	printBAMInfo(log, pImg->bamKey, 
+    	printBAMInfo(*log, pImg->bamKey,
     	                  bamChksumCleared, bamChksumInvalid, 
     	                  !bootChksumInvalid, pImg->hasADOSRootBlk);
     	
@@ -346,7 +347,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
   	       {
   	        	/* invalid boot checksum, but correct BAM key! */
   	   	      fprintf (stdout, "This AmigaDOS disk has an invalid boot checksum and is not bootable.\n\n");
-              writeLog (log, "\nThis is a true AmigaDOS disk with an invalid boot checksum and is therefore not bootable.");
+              writeLog (*log, "\nThis is a true AmigaDOS disk with an invalid boot checksum and is therefore not bootable.");
            }
            else
            {	
@@ -360,9 +361,9 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
   	   		 	     fprintf (stdout, "Found SPECIAL AmigaDOS/NDOS mixed format: Root block pointer on boot block is 0x370;\nVolume name, BAM checksum and BAM key are OK but the rest of the disk \nis actually NDOS with an incorrect checksum on the root block (%d).\n", ROOTBLOCK);
   	   		 	     fprintf (stdout, "This is a RARE format typically found on disks from games like PROJECT-X, PUFFY'S SAGA and some others.\n\n");
   	   		 	     fprintf (stdout, "The great part of this disk is NDOS, so it cannot be checked for errors.\n\n");
-  	   		 	     writeLog (log, "\nFound SPECIAL AmigaDOS/NDOS mixed format: Root block pointer on boot block is 0x370;\nBAM checksum is OK but the rest of the disk actually consists of NDOS data and the\nchecksum on the root block (%d) is incorrect.\n", ROOTBLOCK);
-                 writeLog (log, "This is a RARE format typically found on disks from games like PROJECT-X, PUFFY'S SAGA and some others.\n\n");
-                 writeLog (log, "The great part of this disk is NDOS, so it cannot be checked for errors.\n\n");
+  	   		 	     writeLog (*log, "\nFound SPECIAL AmigaDOS/NDOS mixed format: Root block pointer on boot block is 0x370;\nBAM checksum is OK but the rest of the disk actually consists of NDOS data and the\nchecksum on the root block (%d) is incorrect.\n", ROOTBLOCK);
+                 writeLog (*log, "This is a RARE format typically found on disks from games like PROJECT-X, PUFFY'S SAGA and some others.\n\n");
+                 writeLog (*log, "The great part of this disk is NDOS, so it cannot be checked for errors.\n\n");
                  noDeepChk = true;
                 
               }                                              
@@ -375,24 +376,24 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
   	   	if (hasInvalidName)
   	   	{
   	   	   fprintf (stderr, "This is not an AmigaDOS disk. It appears to be a bootable NDOS disk with a custom (track) loader.\n");
-           writeLog (log, "This is not an AmigaDOS disk. It has an invalid disk name, and appears to be\na bootable NDOS disk with a custom (track) loader.\n");
+           writeLog (*log, "This is not an AmigaDOS disk. It has an invalid disk name, and appears to be\na bootable NDOS disk with a custom (track) loader.\n");
   	   		 noDeepChk = true;
   	   	}
   	   	else if (pImg->bamKey != -1)
   	   	{  
   	   		/* VALID boot checksum */           	   	                    
            fprintf (stdout, "Found valid AmigaDOS volume name: this could be a standard bootable AmigaDOS or mixed-format disk.\n");
-           writeLog (log, "\nFound valid AmigaDOS volume name: this could be a standard bootable AmigaDOS or mixed-format disk.\n");
+           writeLog (*log, "\nFound valid AmigaDOS volume name: this could be a standard bootable AmigaDOS or mixed-format disk.\n");
   	    }			
       }
       else
       {
-      	 char btype[4] = "";         		 
+      	 char btype[5] = "";         		 
 				/* let's distinguish AmigaDOS + NDOS disk */
 				if (bootChksumInvalid) strcpy (btype, "non-");
 
 			  fprintf (stderr, "This disk looks like a %sbootable NDOS disk and cannot be in-depth checked (except for DMS errors).\n\n", btype);
-				writeLog (log, "This disk looks like a %sbootable NDOS disk and cannot be in-depth checked (except for DMS errors).\n\n", btype);
+				writeLog (*log, "This disk looks like a %sbootable NDOS disk and cannot be in-depth checked (except for DMS errors).\n\n", btype);
       	
         noDeepChk = true;                     
       } 
@@ -414,7 +415,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
   	  	/* first, we check the BAM key: if it's incorrect, testing everything else makes no sense! */
   	    /* Without BAM key, there is not the slightest idea of where the BAM is located on the disk! */ 	     	            	    
   	    
-  	    printBAMInfo(log, pImg->bamKey,
+  	    printBAMInfo(*log, pImg->bamKey,
   	                      bamChksumCleared, bamChksumInvalid, 
   	                      !bootChksumInvalid, pImg->hasADOSRootBlk);
   	              	              	      
@@ -426,12 +427,12 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
   	        if (pImg->hasADOSRootBlk)
   	        {
   	        	   fprintf (stderr, "A valid ADOS disk name was found, but no valid BAM key!");
-  	             writeLog (log, "Unable to compute BAM checksum: a valid ADOS name was found, but no valid BAM key!");
+  	             writeLog (*log, "Unable to compute BAM checksum: a valid ADOS name was found, but no valid BAM key!");
   	        }
 
   	        fprintf (stderr, "\nThis is a bootable NDOS disk, or an ADOS disk beyond ANY repair.\n\n");
   	        
-  	        writeLog (log, "\nThis appears to be a bootable NDOS disk, or an ADOS disk beyond ANY repair.\n\n");
+  	        writeLog (*log, "\nThis appears to be a bootable NDOS disk, or an ADOS disk beyond ANY repair.\n\n");
   	        noDeepChk = true;            	    
   	      }            	             	 	
   	                  	        
@@ -460,16 +461,16 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
      	   		     fprintf (stdout, "\nVolume name, BAM checksum and BAM key are OK but the rest of the disk \nis actually NDOS with an incorrect checksum on the root block (%d).\n", ROOTBLOCK);
      	   		 	   fprintf (stdout, "This is a RARE format typically found on disks from PROJECT-X, PUFFY'S SAGA and some other games.\n\n");
      	   		 	   fprintf (stdout, "The great part of this BOOTABLE disk is NDOS, so it cannot be checked for errors.\n\n");
-     	   		 	   writeLog (log, "\nFound SPECIAL AmigaDOS/NDOS mixed format: Root block pointer on boot block is 0;\nBAM checksum is OK but the rest of the disk actually consists of NDOS data and the\nchecksum on the root block (%d) is incorrect.\n", ROOTBLOCK);
-                 writeLog (log, "This is a RARE format typically found on disks from PROJECT-X, PUFFY'S SAGA and some other games.\n\n");
-                 writeLog (log, "The great part of this BOOTABLE disk is NDOS, so it cannot be checked for errors.\n\n");
+     	   		 	   writeLog (*log, "\nFound SPECIAL AmigaDOS/NDOS mixed format: Root block pointer on boot block is 0;\nBAM checksum is OK but the rest of the disk actually consists of NDOS data and the\nchecksum on the root block (%d) is incorrect.\n", ROOTBLOCK);
+                 writeLog (*log, "This is a RARE format typically found on disks from PROJECT-X, PUFFY'S SAGA and some other games.\n\n");
+                 writeLog (*log, "The great part of this BOOTABLE disk is NDOS, so it cannot be checked for errors.\n\n");
                  noDeepChk = true;
               }                                                 	                 	     
      	        else
      	        {
      	        	 fprintf (stdout, "Found SPECIAL AmigaDOS FORMAT: Root block pointer on boot block is 0, but the disk \nis a valid BOOTABLE AmigaDOS disk with a custom boot block.\n\n");
-                 writeLog (log, "\nFound SPECIAL AmigaDOS FORMAT: Root block pointer on boot block is 0 (cleared),\nbut the disk is a valid BOOTABLE AmigaDOS disk with a custom boot block,", pImg->bamKey);
-                 writeLog (log, "\nIt appears to be an AmigaDOS disk with a custom bootloader or boot menu.\n\n");                                     
+                 writeLog (*log, "\nFound SPECIAL AmigaDOS FORMAT: Root block pointer on boot block is 0 (cleared),\nbut the disk is a valid BOOTABLE AmigaDOS disk with a custom boot block,", pImg->bamKey);
+                 writeLog (*log, "\nIt appears to be an AmigaDOS disk with a custom bootloader or boot menu.\n\n");
      	        }
      	    }                                  
        }
@@ -488,8 +489,8 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
        		/* first longword of bootprg is 0x00000000 */                 	  
        	                   	                   	  
        	  fprintf (stdout, "Boot program starts at 0 - this %s disk is not bootable. It might be a data disk.\n\n", dtype);
-       	  writeLog (log, "Found no address greater than 0x00000000 to jump in the boot program: ");
-       	  writeLog (log, "This %s disk is not bootable. It might be a data disk.\n", dtype);                    
+       	  writeLog (*log, "Found no address greater than 0x00000000 to jump in the boot program: ");
+       	  writeLog (*log, "This %s disk is not bootable. It might be a data disk.\n", dtype);
        }  
     }
     
@@ -497,7 +498,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
      {
  		
  		 	 /* check for overdump */            	    	 
-   	 	 writeLog (log, 
+   	 	 writeLog (*log,
    	    	  "*****************************************************************************\
    	  \n  WARNING: This is an OVERDUMPED image file.\
    	    \n  Only the first %d bytes will be checked for errors!\
@@ -514,7 +515,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
   	 if (pImg->hasValidBAMKeyOn80 == true)
      {
   	   printf ("BAM key backup found on longword NEXT to normal location;\ndisk might be infected with the SADDAM virus!\n\n");
- 	     writeLog (log, "BAM key got cleared and backup found on longword NEXT to normal location;\ndisk might be (or previously have been) infected with the SADDAM virus!\n\n");
+ 	     writeLog (*log, "BAM key got cleared and backup found on longword NEXT to normal location;\ndisk might be (or previously have been) infected with the SADDAM virus!\n\n");
  	   }
  	
  	   if (pImg->suspectIRAK == true && !hasInvalidName)
@@ -522,8 +523,8 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
  		   if (pImg->hasValidBAMKeyOn80 == false)
  		   {
  		 	   printf ("This disk is suspected to be infected with the SADDAM virus (unless it is NDOS)!\n\n");
- 	       writeLog (log, "This disk is suspected to be infected with the SADDAM virus,\neven though the backed-up bitmap pointer was not found!");
- 	       writeLog (log, "In worst case, the pointer was already deleted by the virus,\nand you might be forced to scan the disk manually to find the BAM key!\n\n");
+ 	       writeLog (*log, "This disk is suspected to be infected with the SADDAM virus,\neven though the backed-up bitmap pointer was not found!");
+ 	       writeLog (*log, "In worst case, the pointer was already deleted by the virus,\nand you might be forced to scan the disk manually to find the BAM key!\n\n");
  	     }
  	    vircnt++;
  	  }
@@ -533,11 +534,11 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
     if (noDeepChk)
     {
     	 fprintf (stderr, "Sorry, but disks of this type cannot be in-depth checked (except for DMS errors).\n\n");
-		   writeLog (log,   "Sorry, in-depth checks are not available with this disk type (except for DMS errors).\n");
+		   writeLog (*log,   "Sorry, in-depth checks are not available with this disk type (except for DMS errors).\n");
 		}        
   }	
   
-  writeLog (log, "---------------------------------------------------------------------------------------------");
+  writeLog (*log, "---------------------------------------------------------------------------------------------");
   
     /* ======================================================= */
     /* now let's process the rest of the disk! (blocks 2-1759) */
@@ -627,19 +628,19 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
            		  	 	  {
            		  	 	
            		  	 	    printf ("* Block %d: found CHECKSUM ERROR, caused by LAMER virus infection!\n", currBlk);
-           		  	 	    writeLog (log, "Block # %d (cyl. %02d surface %d sector %02d) - CHECKSUM ERROR detected,\ncaused by LAMER virus infection - data is irreversibly lost!",
+           		  	 	    writeLog (*log, "Block # %d (cyl. %02d surface %d sector %02d) - CHECKSUM ERROR detected,\ncaused by LAMER virus infection - data is irreversibly lost!",
            		                  currBlk, pchs->cyl, pchs->hd, pchs->sec);
            		        }
            		        else
            		        {
            		          /* SADDAM */
            		  	 	    printf ("* Block %d: found CHECKSUM ERROR, caused by SADDAM virus infection!\n", currBlk);             		  	 	                             		  	 	
-           		  	 	    writeLog (log, "Block # %d (cyl. %02d surface %d sector %02d) - CHECKSUM ERROR on data block detected,\ncaused by SADDAM virus infection - data must be decoded!",
+           		  	 	    writeLog (*log, "Block # %d (cyl. %02d surface %d sector %02d) - CHECKSUM ERROR on data block detected,\ncaused by SADDAM virus infection - data must be decoded!",
            		                  currBlk, pchs->cyl, pchs->hd, pchs->sec);
            		          	
            		        }
            		               		      
-           		        writeLog (log, "____________________________________________________________________\n");
+           		        writeLog (*log, "____________________________________________________________________\n");
            		      
            		        if (++vircnt == 1) 
            		        {
@@ -656,7 +657,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
            		     	 {
            		     	   case BLKTYPE_CUST_FORMATT: 
            		     	   	/* do not write info about formatted blocks to screen */
-           		     	 	  writeLog (log, "\nBlock # %d (cyl. %02d surface %d sector %02d) is formatted with 0 bytes.\n",
+           		     	 	  writeLog (*log, "\nBlock # %d (cyl. %02d surface %d sector %02d) is formatted with 0 bytes.\n",
            		                     currBlk, pchs->cyl, pchs->hd, pchs->sec);
                        break;         		            
            		         case BLKTYPE_CUST_UNKNOWN:
@@ -669,7 +670,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
            		          	   /* FIXME: could maybe be forced by extra option later on. For now, I'll document this in the logs only
            		          	      to avoid an ugly screen flood for no obvious reason */
            		          	   /* printf ("Block # %d is in a format unknown to AmigaDOS or (un)formatted - don't worry about it.\n", currBlk); */
-           		     	         writeLog (log, "Block # %d (cyl. %02d surface %d sector %02d) is in a checksum-less format UNKNOWN to AmigaDOS or (un)formatted",
+           		     	         writeLog (*log, "Block # %d (cyl. %02d surface %d sector %02d) is in a checksum-less format UNKNOWN to AmigaDOS or (un)formatted",
            		                         currBlk, pchs->cyl, pchs->hd, pchs->sec);
            		     	    }
            		     	   break;
@@ -687,11 +688,11 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
            		     	   	 if ((msk & 8) > 0)
            		     	   	 {
            		     	   	   printf ("__________________________________________________________________________________________________________\n");
-           		       	     writeLog (log, "\nBlock # %d - %s - (cyl. %02d surface %d sector %02d):\nATTENTION: Found 'nextData' block which points back to current block - disk may give unpredictable results!!\n", 
+           		       	     writeLog (*log, "\nBlock # %d - %s - (cyl. %02d surface %d sector %02d):\nATTENTION: Found 'nextData' block which points back to current block - disk may give unpredictable results!!\n",
            		                    currBlk, BLK_TYPES[blkType], pchs->cyl, pchs->hd, pchs->sec);
            		             printf ("\n* Block # %d: ATTENTION: 'NextData' points back to current block - disk may give unpredictable results!!\n", currBlk);
            		             printf ("__________________________________________________________________________________________________________\n\n");
-           		             writeLog (log, "---------------------------------------------------------------------------------------------");
+           		             writeLog (*log, "---------------------------------------------------------------------------------------------");
            		             
            		            errcnt++; 
            		           }  
@@ -699,11 +700,11 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
            		     	   	 if (msk == 7)
            		     	   	 {
            		     	   	   printf ("__________________________________________________________________________________________________________\n");
-           		       	     writeLog (log, "\nBlock # %d - %s - (cyl. %02d surface %d sector %02d):\nATTENTION: Neither the sequence number, nor the valid data byte, nor the \n'NextData' pointer are valid - This DATA block is badly damaged!!\n", 
+           		       	     writeLog (*log, "\nBlock # %d - %s - (cyl. %02d surface %d sector %02d):\nATTENTION: Neither the sequence number, nor the valid data byte, nor the \n'NextData' pointer are valid - This DATA block is badly damaged!!\n",
            		                    currBlk, BLK_TYPES[blkType], pchs->cyl, pchs->hd, pchs->sec);
            		             printf ("\n* Block # %d:   ATTENTION: Neither the sequence number, nor the valid data byte, nor the \n                'NextData' pointer are valid- This DATA block is badly damaged!!\n", currBlk);
            		             printf ("__________________________________________________________________________________________________________\n\n");
-           		             writeLog (log, "---------------------------------------------------------------------------------------------");
+           		             writeLog (*log, "---------------------------------------------------------------------------------------------");
            		             
            		            errcnt++; 
            		           } 
@@ -715,33 +716,33 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
            		             if ((msk & 1) > 0)
            		             {	
            		               printf ("__________________________________________________________________________________________________________\n");
-           		       	       writeLog (log, "\nBlock # %d - %s - (cyl. %02d surface %d sector %02d):\nERROR: Bad sequence number on block (i. e. less than 2 or more than %d);\nRead errors are likely to occur when copying files!\n",
+           		       	       writeLog (*log, "\nBlock # %d - %s - (cyl. %02d surface %d sector %02d):\nERROR: Bad sequence number on block (i. e. less than 2 or more than %d);\nRead errors are likely to occur when copying files!\n",
            		                    currBlk, BLK_TYPES[blkType], pchs->cyl, pchs->hd, pchs->sec, BLOCKSPERDISK-1);
            		               printf ("\n* Block # %d: ERROR: Bad sequence number on block (i. e. less than 2 or more than %d);\nRead errors are likely to occur!!\n", currBlk, BLOCKSPERDISK-1);
            		               printf ("__________________________________________________________________________________________________________\n\n");
-           		               writeLog (log, "---------------------------------------------------------------------------------------------");
+           		               writeLog (*log, "---------------------------------------------------------------------------------------------");
            		             
            		               errcnt++; 
            		             } 
            		             if ((msk & 2) > 0)
            		             {	
            		               printf ("__________________________________________________________________________________________________________\n");
-           		       	       writeLog (log, "\nBlock # %d - %s - (cyl. %02d surface %d sector %02d):\nERROR: Bad amount of valid data words in block (must be in range 0x02-0x1E8)!\n",
+           		       	       writeLog (*log, "\nBlock # %d - %s - (cyl. %02d surface %d sector %02d):\nERROR: Bad amount of valid data words in block (must be in range 0x02-0x1E8)!\n",
            		                    currBlk, BLK_TYPES[blkType], pchs->cyl, pchs->hd, pchs->sec);
            		               printf ("\n* Block # %d: ERROR: Bad amount of valid data words in block (must be in range 0x02-0x1E8)!\n", currBlk);
            		               printf ("__________________________________________________________________________________________________________\n\n");
-           		               writeLog (log, "---------------------------------------------------------------------------------------------");
+           		               writeLog (*log, "---------------------------------------------------------------------------------------------");
            		             
            		               errcnt++; 
            		             }
            		             if (((msk & 4) > 0) && ((msk & 8) == 0))
            		             {	
            		               printf ("__________________________________________________________________________________________________________\n");
-           		       	       writeLog (log, "\nBlock # %d - %s - (cyl. %02d surface %d sector %02d):\nERROR: Bad pointer to next data block! (can be in range 2-%d or 0)\nRead errors are likely to occur when copying files!\n",
+           		       	       writeLog (*log, "\nBlock # %d - %s - (cyl. %02d surface %d sector %02d):\nERROR: Bad pointer to next data block! (can be in range 2-%d or 0)\nRead errors are likely to occur when copying files!\n",
            		                    currBlk, BLK_TYPES[blkType], pchs->cyl, pchs->hd, pchs->sec, BLOCKSPERDISK-1);
            		               printf ("\n* Block # %d: ERROR: Bad pointer to next data block! (can be in range 2-%d or 0)\n  Read errors are likely to occur when copying files!\n", currBlk, BLOCKSPERDISK-1);
            		               printf ("__________________________________________________________________________________________________________\n\n");
-           		               writeLog (log, "---------------------------------------------------------------------------------------------");
+           		               writeLog (*log, "---------------------------------------------------------------------------------------------");
            		             
            		               errcnt++; 
            		             }
@@ -749,11 +750,11 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
            		           }
 
            		     	   	  printf ("____________________________________________________________________\n"); 	
-           		       	    writeLog (log, "\nBlock # %d - %s - (cyl. %02d surface %d sector %02d) - CHECKSUM ERROR detected!", 
+           		       	    writeLog (*log, "\nBlock # %d - %s - (cyl. %02d surface %d sector %02d) - CHECKSUM ERROR detected!",
            		                     currBlk, BLK_TYPES[blkType], pchs->cyl, pchs->hd, pchs->sec);
            		            printf ("\n* Found CHECKSUM ERROR on block %d! \n", currBlk);
            		            printf ("____________________________________________________________________\n\n");
-           		            writeLog (log, "---------------------------------------------------------------------------------------------");
+           		            writeLog (*log, "---------------------------------------------------------------------------------------------");
            		     	      errcnt++;
            		     	      
            		     	   break;         		     	   
@@ -772,7 +773,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
            	         printf ("-----------------------------------\n"); 
            	      }
            	          
-           	      writeLog (log, "Block # %d (cyl. %02d surface %d sector %02d) has invalid checksum, but is not used.", 
+           	      writeLog (*log, "Block # %d (cyl. %02d surface %d sector %02d) has invalid checksum, but is not used.",
            	                currBlk, pchs->cyl, pchs->hd, pchs->sec);
            	    }         		         		
            	  }
@@ -802,7 +803,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
     
            	  /* ----------------------------------------------------------- */   		  	 
            		/* test for SADDAM (type II) virus infection in block          */
-           		/* (SADDAM type II: fake Disk-Validator, called «««Saddam»»»   */
+           		/* (SADDAM type II: fake Disk-Validator, called Saddam   */
            		/* -- THIS VIRUS SUBTYPE KEEPS CHECKSUM INTACT!                   */
            		/* ----------------------------------------------------------- */         		 
            		 
@@ -833,7 +834,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
         		     	   	 printf ("____________________________________________________________________\n"); 	
            		 	       printf ("\nBlock # %d: VIRUS ALERT: Found bogus disk-validator in L - \n this disk is infected with the SADDAM virus!\n", currBlk);
            		         printf ("____________________________________________________________________\n\n"); 	
-           		         writeLog (log, "\nBlock # %d (cyl. %02d surface %d sector %02d): ATTENTION: Found bogus disk-validator in L directory - \nThis disk is infected with the SADDAM virus!\n",
+           		         writeLog (*log, "\nBlock # %d (cyl. %02d surface %d sector %02d): ATTENTION: Found bogus disk-validator in L directory - \nThis disk is infected with the SADDAM virus!\n",
            		                   currBlk, pchs->cyl, pchs->hd, pchs->sec);
            		 	  
            		 	       hasCheckedBogusDV = true;
@@ -855,7 +856,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
                    	 	fprintf (stderr, "______________________________________________________________________________________________\n"); 	
                    	 	fprintf (stderr, "\nBlock # %d: VIRUS ALERT: Found Jeff/Butonic v1.31 in root directory - this disk is infected!\n", currBlk);
            		        fprintf (stderr, "______________________________________________________________________________________________\n\n"); 	
-           		         writeLog (log, "\nBlock # %d (cyl. %02d surface %d sector %02d): VIRUS ALERT: Found Jeff/Butonic v1.31 in root directory - this disk is infected!\n",
+           		         writeLog (*log, "\nBlock # %d (cyl. %02d surface %d sector %02d): VIRUS ALERT: Found Jeff/Butonic v1.31 in root directory - this disk is infected!\n",
            		                   currBlk, pchs->cyl, pchs->hd, pchs->sec);
            		 	  
            		 	      hasCheckedJeffOld = true;
@@ -877,7 +878,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
                  	  	fprintf (stderr, "______________________________________________________________________________________________\n"); 	
                  	  	fprintf (stderr, "\nBlock # %d: VIRUS ALERT: Found Jeff/Butonic v3.10 in root directory - this disk is infected!\n", currBlk);
            		        fprintf (stderr, "______________________________________________________________________________________________\n\n"); 	
-           		        writeLog (log, "\nBlock # %d (cyl. %02d surface %d sector %02d): VIRUS ALERT: Found Jeff/Butonic v3.10 in root directory - this disk is infected!\n",
+           		        writeLog (*log, "\nBlock # %d (cyl. %02d surface %d sector %02d): VIRUS ALERT: Found Jeff/Butonic v3.10 in root directory - this disk is infected!\n",
            		                   currBlk, pchs->cyl, pchs->hd, pchs->sec);
            		 	  
            		 	      hasCheckedJeffNew = true;
@@ -899,7 +900,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
                  	  	fprintf (stderr, "______________________________________________________________________________________________\n"); 	
                  	  	fprintf (stderr, "\nBlock # %d: VIRUS ALERT: Found Bret Hawnes file virus in root directory - this disk is infected!\n", currBlk);
            		        fprintf (stderr, "______________________________________________________________________________________________\n\n"); 	
-           		        writeLog (log, "\nBlock # %d (cyl. %02d surface %d sector %02d): VIRUS ALERT: Found Bret Hawnes file virus in root directory - this disk is infected!\n",
+           		        writeLog (*log, "\nBlock # %d (cyl. %02d surface %d sector %02d): VIRUS ALERT: Found Bret Hawnes file virus in root directory - this disk is infected!\n",
            		                   currBlk, pchs->cyl, pchs->hd, pchs->sec);
            		 	  
            		 	      hasCheckedBratYawns = true;
@@ -921,7 +922,7 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
                  	  	fprintf (stderr, "______________________________________________________________________________________________\n"); 	
                  	  	fprintf (stderr, "\nBlock # %d: VIRUS ALERT: Found ELENI 1 (MessAngel-B) file virus in root directory - this disk is infected!\n", currBlk);
            		        fprintf (stderr, "______________________________________________________________________________________________\n\n"); 	
-           		        writeLog (log, "\nBlock # %d (cyl. %02d surface %d sector %02d): VIRUS ALERT: Found ELENI 1 (MessAngel-B) file virus in root directory - this disk is infected!\n",
+           		        writeLog (*log, "\nBlock # %d (cyl. %02d surface %d sector %02d): VIRUS ALERT: Found ELENI 1 (MessAngel-B) file virus in root directory - this disk is infected!\n",
            		                   currBlk, pchs->cyl, pchs->hd, pchs->sec);
            		 	  
            		 	      hasCheckedEleni = true;
@@ -947,9 +948,9 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
       		/*DMS error on block detected! (note these checks are independent of DOS type!) */
       	      	
       	   fprintf (stderr, "* Block %d: DMS ERROR detected - probably caused by a bad source disk.\n", currBlk);
-           writeLog (log, "Block # %d (cyl. %02d surface %d sector %02d): DMS ERROR detected - probably caused by a bad source disk.",
+           writeLog (*log, "Block # %d (cyl. %02d surface %d sector %02d): DMS ERROR detected - probably caused by a bad source disk.",
                      currBlk, pchs->cyl, pchs->hd, pchs->sec);     	      	              	     
-           if (pchs->sec == 10) writeLog (log, ""); /* implicit line feed */
+           if (pchs->sec == 10) writeLog (*log, ""); /* implicit line feed */
            	
            if (!hasSuffix)
            { 
@@ -992,10 +993,9 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
      else
      {
   		 fprintf (stdout, "\nThere were no errors found on this disk!\n\n--------------------------------------- \n\n");
-       writeLog (log, "\nThis disk is OK - there were no errors found.\n");
+       writeLog (*log, "\nThis disk is OK - there were no errors found.\n");
        /* before we rename the file, we must close it first! */
-       fclose(log);
-       
+
        strcpy (strSuffix, SUFFIX_ISOK);        /* set "OK" suffix */
      }
   
@@ -1003,8 +1003,9 @@ bool chkErr (dskImgS_t* pImg, dskSecProps_t* pSecProps, FILE* log, inZIP_t* inZI
   
     hasSuffix = true;
   }
-   
- fclose(log); 
+
+ fclose(*log);
+ *log=NULL;
  remove (logFilenameCopy);
  rename (logFilenameMain, logFilenameCopy);
 

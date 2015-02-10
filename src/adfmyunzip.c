@@ -294,7 +294,7 @@ bad2:					lpUnzipClose(huz);
             else
             {
             	memcpy (destbuf2, destbuf, ADF_STANDARD_SIZE);              
-              chkCompressedADF (destbuf2, logMain, &inZIP, adfType);
+              chkCompressedADF (destbuf2, &logMain, &inZIP, adfType);
             }
           }
 #ifdef WIN32
@@ -329,7 +329,10 @@ bad:
 #endif
 
   if (destbuf2) free (destbuf2);
-  fclose(logMain);	
+  if (logMain) {
+	  fclose(logMain);
+	  logMain = NULL;
+  }
 	return(1);
 }
 

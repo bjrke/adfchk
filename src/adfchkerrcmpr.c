@@ -1,6 +1,6 @@
 #include "adfchkerrcmpr.h"
 
-void chkCompressedADF (dskImgS_t* d, FILE* mainLog, inZIP_t* inArc, uint8 flag)
+void chkCompressedADF (dskImgS_t* d, FILE** mainLog, inZIP_t* inArc, uint8 flag)
 {
  /* All the checking in a nutshell for in-archive operation. */
  bool iError = false;

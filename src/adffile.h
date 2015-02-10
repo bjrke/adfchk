@@ -54,7 +54,7 @@
 
 extern int argcnt;
 extern void waitKey(void);
-extern bool chkErr (dskImgS_t*, dskSecProps_t*, FILE*, inZIP_t*, uint8);
+extern bool chkErr (dskImgS_t*, dskSecProps_t*, FILE**, inZIP_t*, uint8);
 extern uint8 evalBootblkType(singleSecS_t*);
 
 

@@ -60,7 +60,7 @@ void chkBAMKey (dskImgS_t*, dskSecProps_t*);
 uint64 computeChksum (singleSecS_t*,
                    const uint16,
 									 const uint8 /* , FILE* */);									 
-bool chkErr (dskImgS_t*, dskSecProps_t*, FILE*, inZIP_t*, uint8);
+bool chkErr (dskImgS_t*, dskSecProps_t*, FILE**, inZIP_t*, uint8);
 chsS_t* splitsector (uint16);
 bool isADOSRoot (singleSecS_t*);
 bool hasADOSBitmap (singleSecS_t*);
