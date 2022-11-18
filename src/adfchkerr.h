@@ -30,8 +30,8 @@ extern unsigned char irakFileHdrSig[16];
 #define CHKSUM_TYPE_BAM_L 0
 #define CHKSUM_TYPE_OTHER_L 5
 
-char * DOS_TYPES[12];
-char * BLK_TYPES[20];
+extern char * DOS_TYPES[12];
+extern char * BLK_TYPES[20];
 
 /* 
 ----------------------------------

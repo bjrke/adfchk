@@ -3,10 +3,7 @@
 
 /* currently only containing inline functions */
 
-inline void clearScreen (void);
-
-inline void clearScreen (void)
-{
+void clearScreen (void) {
   /* FIXME: poor clrscr() replacement.
 	 if Borland's Turbo C compiler is used, true clrscr() from
 	 conio.h is used; otherwise a replacement is called.   
@@ -24,4 +21,13 @@ inline void clearScreen (void)
 	printf ("\n");
   while (iCnt++ < 22);
 #endif
+}
+
+void strToUpper (char* s) {
+ while (*s)
+ {
+	if(*s > 96 && *s<123)
+		 *s-=32;
+		 s++;
+ }
 }

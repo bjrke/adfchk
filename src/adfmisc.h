@@ -2,21 +2,13 @@
 #define ADFMISC_H
 #include <stdio.h>
 
-/* inline void clearScreen (void); */
+void clearScreen (void);
 
 /* clearScreen() routine had to be moved into a separate file,
    because it created a multiple definition circle with adfmenu.h
    due to adfmain.h/adfmenu.h interdependence! */
 
-inline void strToUpper (char* s)
-{
- while (*s)
- {
-	if(*s > 96 && *s<123)
-		 *s-=32;
-		 s++;
- }
-}
+void strToUpper (char*);
 
 unsigned long crcLookupTable[256] = 
  {  0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419,

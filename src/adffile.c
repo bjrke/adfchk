@@ -17,8 +17,6 @@ char adfFilename[MAXFILENAMELEN];
 char logFilenameMain[100] = _LOGFILENAME_GENERIC;
 char logFilenameIOErr[100] = "ADFCHKIOERR.LOG";
 
-extern char* DOS_TYPES[];
-extern char* BLK_TYPES[];
 extern uint64 crcLookupTable[256];
 extern int argcnt;
 

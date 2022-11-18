@@ -18,7 +18,7 @@
 #define SMALLSTRLEN 80
 
 static inline uint16 menuSelect(void);
-inline void prgHeader(bool);
+extern inline void prgHeader(bool);
 extern inline void clearScreen (void);
 
 extern int argcnt; /* from adfmain.c */
@@ -26,7 +26,7 @@ extern void waitKey(void);
 extern uint8 evalBootType(singleSecS_t*); /* from adffile.c */
 
 /* from blktypes.h, included into adffile.h */
-extern char* DOS_TYPES[]; 
+extern char* DOS_TYPES[];
 extern char* BLK_TYPES[];
 
 static inline uint16 menuSelect(void)
